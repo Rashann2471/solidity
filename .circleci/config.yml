@@ -364,11 +364,55 @@ commands:
 
   install_dependencies_osx:
     steps:
-      # FIXME: We used to cache dependencies on macOS but now it takes longer than just installing
-      # them each time. See https://github.com/ethereum/solidity/issues/12925.
+      - restore_cache:
+          keys:
+            - b_osx-dependencies-{{ checksum ".circleci/osx_install_dependencies.sh" }}-flag
+      - run:
+          name: Checking dependency flag
+          command: |
+            if test -f ~/b_osx-dependencies-flag
+            then
+              echo "Dependency flag exists: removing /usr/local and /opt/homebrew directories. These directories will be restored from cache."
+              sudo rm -rf /usr/local/*
+              # circleci is providing the circlici cli tools via some kind of symlink magic.
+              # so we just save the original symlinks and using them later.
+              mv /opt/homebrew/bin/circleci /tmp/circleci
+              mv /opt/homebrew/bin/circleci-agent /tmp/circleci-agent
+              sudo rm -rf /opt/homebrew
+              sudo mkdir -p /opt/homebrew/bin
+              sudo chmod 777 /opt/homebrew
+              sudo chmod 777 /opt/homebrew/bin
+              mv /tmp/circleci /opt/homebrew/bin/circleci
+              mv /tmp/circleci-agent /opt/homebrew/bin/circleci-agent
+              sudo chmod 777 /usr/local
+            else
+              echo "Dependency flag didn't exist. Not doing anything."
+            fi
+      - restore_cache:
+          keys:
+            - b_osx-dependencies-{{ checksum ".circleci/osx_install_dependencies.sh" }}
       - run:
           name: Install build dependencies
           command: .circleci/osx_install_dependencies.sh
+      - run:
+          name: Setting dependency flag
+          command: |
+            if test -f /usr/local/lib/libz3.a
+            then
+              echo "/usr/local/lib/libz3.a found: setting dependency flag."
+              touch ~/b_osx-dependencies-flag
+            else
+              echo "Dependencies not build."
+            fi
+      - save_cache:
+          key: b_osx-dependencies-{{ checksum ".circleci/osx_install_dependencies.sh" }}
+          paths:
+            - /usr/local
+            - /opt/homebrew
+      - save_cache:
+          key: b_osx-dependencies-{{ checksum ".circleci/osx_install_dependencies.sh" }}-flag
+          paths:
+            - ~/b_osx-dependencies-flag
 
 defaults:
 
@@ -440,12 +484,13 @@ defaults:
 
   - base_osx: &base_osx
       macos:
-        xcode: "14.2.0"
-      resource_class: macos.x86.medium.gen2
+        xcode: "15.0.0"
+      resource_class: macos.m1.medium.gen1
       environment: &base_osx_env
         TERM: xterm
         MAKEFLAGS: -j5
         CPUs: 5
+        ETH_EVMONE: /usr/local/lib/libevmone.dylib
 
   - base_python_small: &base_python_small
       docker:
@@ -1095,6 +1140,7 @@ jobs:
     environment:
       <<: *base_osx_env
       CMAKE_BUILD_TYPE: Release
+      CMAKE_OPTIONS: -DCMAKE_OSX_ARCHITECTURES:STRING=x86_64;arm64
     steps:
       - checkout
       - install_dependencies_osx
@@ -1129,6 +1175,13 @@ jobs:
       - install_dependencies_osx
       - attach_workspace:
           at: .
+      - run:
+          name: Add /opt/homebrew/bin to PATH
+          command: |
+            echo "PATH=$PATH"
+            echo 'export PATH=/opt/homebrew/bin:"$PATH"' >> "$BASH_ENV"
+            source "$BASH_ENV"
+            ls -lah /opt/homebrew/bin
       - run_cmdline_tests
       - store_artifacts_test_results
       - matrix_notify_failure_unless_pr
