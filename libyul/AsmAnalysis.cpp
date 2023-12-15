@@ -319,6 +319,21 @@ std::vector<YulString> AsmAnalyzer::operator()(FunctionCall const& _funCall)
 				"The underlying opcode will eventually undergo breaking changes, "
 				"and its use is not recommended."
 			);
+		else if (
+				m_evmVersion.supportsTransientStorage() &&
+				(
+					_funCall.functionName.name == "tstore"_yulstring ||
+					_funCall.functionName.name == "tload"_yulstring
+				)
+			)
+			m_errorReporter.warning(
+				2394_error,
+				nativeLocationOf(_funCall.functionName),
+				// TODO: Make warning longer and more menacing :)
+				"Please, only use transient storage if you know what you are doing. "
+				"If you know what you are doing, please don't use transient storage (unless strictly needed)."
+			);
+
 		parameterTypes = &f->parameters;
 		returnTypes = &f->returns;
 		if (!f->literalArguments.empty())
@@ -735,6 +750,14 @@ bool AsmAnalyzer::validateInstructions(evmasm::Instruction _instr, SourceLocatio
 			"PC instruction is a low-level EVM feature. "
 			"Because of that PC is disallowed in strict assembly."
 		);
+	else if (
+			!m_evmVersion.supportsTransientStorage() &&
+			(
+				_instr == evmasm::Instruction::TSTORE ||
+				_instr == evmasm::Instruction::TLOAD
+			)
+		)
+			errorForVM(3768_error, "only available for Cancun-compatible");
 	else
 		return false;
 
