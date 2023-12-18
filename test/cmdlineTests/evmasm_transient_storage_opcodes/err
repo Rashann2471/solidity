@@ -1,0 +1,11 @@
+Warning: Please, only use transient storage if you know what you are doing. If you know what you are doing, please don't use transient storage (unless strictly needed).
+ --> evmasm_transient_storage_opcodes/input.sol:7:13:
+  |
+7 |             tstore(0, 0)
+  |             ^^^^^^
+
+Warning: Please, only use transient storage if you know what you are doing. If you know what you are doing, please don't use transient storage (unless strictly needed).
+ --> evmasm_transient_storage_opcodes/input.sol:8:17:
+  |
+8 |             pop(tload(0))
+  |                 ^^^^^
