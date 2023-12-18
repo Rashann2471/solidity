@@ -314,12 +314,10 @@ u256 EVMInstructionInterpreter::eval(
 		accessMemory(arg[0], arg[1]);
 		logTrace(_instruction, arg);
 		return 0;
-
 	case Instruction::TLOAD:
-		// TODO
-		return 0;
+		return m_state.transientStorage[h256(arg[0])];
 	case Instruction::TSTORE:
-		// TODO
+		m_state.transientStorage[h256(arg[0])] = h256(arg[1]);
 		return 0;
 	// --------------- calls ---------------
 	case Instruction::CREATE:
@@ -370,15 +368,18 @@ u256 EVMInstructionInterpreter::eval(
 		accessMemory(arg[0], arg[1]);
 		logTrace(_instruction, arg);
 		m_state.storage.clear();
+		m_state.transientStorage.clear();
 		BOOST_THROW_EXCEPTION(ExplicitlyTerminated());
 	case Instruction::INVALID:
 		logTrace(_instruction);
 		m_state.storage.clear();
+		m_state.transientStorage.clear();
 		m_state.trace.clear();
 		BOOST_THROW_EXCEPTION(ExplicitlyTerminated());
 	case Instruction::SELFDESTRUCT:
 		logTrace(_instruction, arg);
 		m_state.storage.clear();
+		m_state.transientStorage.clear();
 		m_state.trace.clear();
 		BOOST_THROW_EXCEPTION(ExplicitlyTerminated());
 	case Instruction::POP:
