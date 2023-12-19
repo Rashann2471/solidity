@@ -81,6 +81,7 @@ commands:
         enum:
           - solcjs
           - native
+          - native_x86_64
       binary_path:
         type: string
       preset:
@@ -1671,8 +1672,8 @@ jobs:
           at: .
       - prepare_bytecode_report:
           label: "osx_x86_64"
-          binary_type: native
-          binary_path: "arch -x86_64 ${PWD}/build/solc/solc"
+          binary_type: native_x86_64
+          binary_path: "${PWD}/build/solc/solc"
           preset: "<< parameters.preset >>"
 
   b_bytecode_win:

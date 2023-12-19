@@ -26,6 +26,11 @@ class CompilerInterface(Enum):
     STANDARD_JSON = 'standard-json'
 
 
+class ExecutionArchitecture(Enum):
+    NATIVE = 'native'
+    NATIVE_X86_64 = 'native_x86_64'
+
+
 class SettingsPreset(Enum):
     LEGACY_OPTIMIZE = 'legacy-optimize'
     LEGACY_NO_OPTIMIZE = 'legacy-no-optimize'
@@ -421,6 +426,13 @@ def commandline_parser() -> ArgumentParser:
         default=CompilerInterface.STANDARD_JSON.value,
         choices=[c.value for c in CompilerInterface],
         help="Compiler interface to use.",
+    )
+    parser.add_argument(
+        '--execution-arch',
+        dest='execution-arch',
+        default=ExecutionArchitecture.NATIVE.value,
+        choices=[c.value for c in ExecutionArchitecture],
+        help="Select the architecture of the universal binary that should be executed. (Only relevant for macOS)",
     )
     parser.add_argument(
         '--preset',
