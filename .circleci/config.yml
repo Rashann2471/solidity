@@ -1672,7 +1672,7 @@ jobs:
       - prepare_bytecode_report:
           label: "osx_x86_64"
           binary_type: native
-          binary_path: "${PWD}/build/solc/solc"
+          binary_path: "arch -x86_64 ${PWD}/build/solc/solc"
           preset: "<< parameters.preset >>"
 
   b_bytecode_win:
