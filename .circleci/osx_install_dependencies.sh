@@ -108,6 +108,16 @@ then
     sudo make install
     cd ../..
     rm -rf evmone
+
+    # evmone's buildsystem is currently not supporting the creation of universal binaries,
+    # so we just extract the x86_64 binaries to /usr/local/x86_64.
+    evmone_package="evmone-${evmone_version}-darwin-x86_64.tar.gz"
+    wget "https://github.com/ethereum/evmone/releases/download/v${evmone_version}/${evmone_package}"
+    validate_checksum "$evmone_package" 1b7773779287d7908baca6b8d556a98800cbd7d6e5c910b55fa507642bc0a15c
+    sudo mkdir -p /usr/local/x86_64
+    sudo chmod 777 /usr/local/x86_64
+    tar xzpf "$evmone_package" -C /usr/local/x86_64
+    rm "$evmone_package"
   else
     evmone_package="evmone-${evmone_version}-darwin-x86_64.tar.gz"
     wget "https://github.com/ethereum/evmone/releases/download/v${evmone_version}/${evmone_package}"
