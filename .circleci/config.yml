@@ -92,7 +92,7 @@ commands:
             .circleci/parallel_bytecode_report.sh \
                 "<< parameters.label >>" \
                 "<< parameters.binary_type >>" \
-                "${PWD}/<< parameters.binary_path >>" \
+                "<< parameters.binary_path >>" \
                 "<< parameters.preset >>"
       - store_artifacts:
           path: bytecode-report-<< parameters.label >>-standard-json-<< parameters.preset >>.txt
@@ -1624,7 +1624,7 @@ jobs:
       - prepare_bytecode_report:
           label: "ubuntu2004-static"
           binary_type: native
-          binary_path: "build/solc/solc-static-linux"
+          binary_path: "${PWD}/build/solc/solc-static-linux"
           preset: "<< parameters.preset >>"
 
   b_bytecode_ubu:
@@ -1640,7 +1640,7 @@ jobs:
       - prepare_bytecode_report:
           label: "ubuntu"
           binary_type: native
-          binary_path: "build/solc/solc"
+          binary_path: "${PWD}/build/solc/solc"
           preset: "<< parameters.preset >>"
 
   b_bytecode_osx:
@@ -1656,7 +1656,23 @@ jobs:
       - prepare_bytecode_report:
           label: "osx"
           binary_type: native
-          binary_path: "build/solc/solc"
+          binary_path: "${PWD}/build/solc/solc"
+          preset: "<< parameters.preset >>"
+
+  b_bytecode_osx_x86_64:
+    parameters:
+      preset:
+        type: string
+    <<: *base_osx
+    parallelism: 2 # For prepare_bytecode_report
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - prepare_bytecode_report:
+          label: "osx_x86_64"
+          binary_type: native
+          binary_path: "${PWD}/build/solc/solc"
           preset: "<< parameters.preset >>"
 
   b_bytecode_win:
@@ -1677,7 +1693,7 @@ jobs:
       - prepare_bytecode_report:
           label: "windows"
           binary_type: native
-          binary_path: "build/solc/Release/solc.exe"
+          binary_path: "${PWD}/build/solc/Release/solc.exe"
           preset: "<< parameters.preset >>"
 
   b_bytecode_ems:
@@ -1692,7 +1708,7 @@ jobs:
       - prepare_bytecode_report:
           label: "emscripten"
           binary_type: solcjs
-          binary_path: "emscripten_build/libsolc/soljson.js"
+          binary_path: "${PWD}/emscripten_build/libsolc/soljson.js"
           preset: "<< parameters.preset >>"
 
   t_bytecode_compare:
@@ -1882,6 +1898,11 @@ workflows:
           matrix: *bytecode_compare_preset_matrix
           requires:
             - b_osx
+      - b_bytecode_osx_x86_64:
+          <<: *on_all_tags_and_branches
+          matrix: *bytecode_compare_preset_matrix
+          requires:
+            - b_osx
       - b_bytecode_ems:
           <<: *on_all_tags_and_branches
           matrix: *bytecode_compare_preset_matrix
@@ -1894,6 +1915,7 @@ workflows:
             - b_bytecode_ubu
             - b_bytecode_win
             - b_bytecode_osx
+            - b_bytecode_osx_x86_64
             - b_bytecode_ems
 
       # Final artifacts
