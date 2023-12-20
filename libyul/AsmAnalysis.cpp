@@ -329,9 +329,11 @@ std::vector<YulString> AsmAnalyzer::operator()(FunctionCall const& _funCall)
 			m_errorReporter.warning(
 				2394_error,
 				nativeLocationOf(_funCall.functionName),
-				// TODO: Make warning longer and more menacing :)
-				"Please, only use transient storage if you know what you are doing. "
-				"If you know what you are doing, please don't use transient storage (unless strictly needed)."
+				"Due to a bug in the specification of EIP-1153, transient storage can break the composability of smart contracts. "
+				"Since transient storage is cleared only at the end of the transaction and not at the end of call frames, "
+				"your contract may unintentionally misbehave when invoked multiple times in a complex transaction. "
+				"To avoid this, be sure to clear all transient storage at the end of any call to your contract. "
+				"The use of transient storage for reentrancy guards that are cleared at the end of the call is safe."
 			);
 
 		parameterTypes = &f->parameters;
