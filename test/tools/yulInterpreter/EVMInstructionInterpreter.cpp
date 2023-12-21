@@ -233,6 +233,8 @@ u256 EVMInstructionInterpreter::eval(
 		return m_state.chainid;
 	case Instruction::BASEFEE:
 		return m_state.basefee;
+	case Instruction::BLOBHASH:
+		return blobHash(arg[0]);
 	case Instruction::EXTCODESIZE:
 		return u256(keccak256(h256(arg[0]))) & 0xffffff;
 	case Instruction::EXTCODEHASH:
@@ -646,4 +648,12 @@ std::pair<bool, size_t> EVMInstructionInterpreter::isInputMemoryPtrModified(
 	}
 	else
 		return {false, 0};
+}
+
+util::h256 EVMInstructionInterpreter::blobHash(u256 const& _index)
+{
+	yulAssert(_index > 0, "Invalid blobhash index");
+	if (m_evmVersion.hasBlobhash() && _index < m_state.blobHashes.size())
+		return util::h256(m_state.blobHashes[size_t(_index)]);
+	return util::FixedHash<32>{};
 }

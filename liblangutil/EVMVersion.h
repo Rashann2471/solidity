@@ -103,6 +103,7 @@ public:
 	bool hasBaseFee() const { return *this >= london(); }
 	bool hasPrevRandao() const { return *this >= paris(); }
 	bool hasPush0() const { return *this >= shanghai(); }
+	bool hasBlobhash() const { return *this >= cancun(); }
 
 	bool hasOpcode(evmasm::Instruction _opcode) const;
 

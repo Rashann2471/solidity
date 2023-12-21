@@ -111,6 +111,11 @@ struct InterpreterState
 	/// Number of the current state instance, used for recursion protection
 	size_t numInstance = 0;
 
+	const std::array<std::string, 2> blobHashes =
+	{
+		"0x0000000000000000000000000000000000000001",
+		"0x0000000000000000000000000000000000000002"
+	};
 	/// Prints execution trace and non-zero storage to @param _out.
 	/// Flag @param _disableMemoryTrace, if set, does not produce a memory dump. This
 	/// avoids false positives reports by the fuzzer when certain optimizer steps are
