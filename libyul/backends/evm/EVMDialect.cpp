@@ -128,11 +128,25 @@ std::set<YulString> createReservedIdentifiers(langutil::EVMVersion _evmVersion)
 		return _instrName == "prevrandao" && _evmVersion < langutil::EVMVersion::paris();
 	};
 
+	// TODO remove this in 0.9.0. We allow creating functions or identifiers in Yul with the names
+	// tstore or tload for VMs before cancun.
+	auto transientStorageException = [&](evmasm::Instruction _instr) -> bool
+	{
+		return
+			_evmVersion < langutil::EVMVersion::cancun() &&
+			(_instr == evmasm::Instruction::TSTORE || _instr == evmasm::Instruction::TLOAD)
+		;
+	};
+
 	std::set<YulString> reserved;
 	for (auto const& instr: evmasm::c_instructions)
 	{
 		std::string name = toLower(instr.first);
-		if (!baseFeeException(instr.second) && !prevRandaoException(name))
+		if (
+			!baseFeeException(instr.second) &&
+			!prevRandaoException(name) &&
+			!transientStorageException(instr.second)
+		)
 			reserved.emplace(name);
 	}
 	reserved += std::vector<YulString>{

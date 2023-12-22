@@ -752,14 +752,6 @@ bool AsmAnalyzer::validateInstructions(evmasm::Instruction _instr, SourceLocatio
 			"PC instruction is a low-level EVM feature. "
 			"Because of that PC is disallowed in strict assembly."
 		);
-	else if (
-			!m_evmVersion.supportsTransientStorage() &&
-			(
-				_instr == evmasm::Instruction::TSTORE ||
-				_instr == evmasm::Instruction::TLOAD
-			)
-		)
-			errorForVM(3768_error, "only available for Cancun-compatible");
 	else
 		return false;
 

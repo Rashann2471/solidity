@@ -124,6 +124,8 @@ done < <(
       # Skipping tests with "let prevrandao := ..."
       grep -v -E 'inlineAssembly/prevrandao_allowed_function_pre_paris.sol' |
       grep -v -E 'inlineAssembly/prevrandao_disallowed_function_post_paris.sol' |
+      # Skipping tests with "let tstore/tload := ..."
+      grep -v -E 'inlineAssembly/tload_tstore_not_reserved_before_cancun.sol' |
       # Skipping license error, unrelated to the grammar
       grep -v -E 'license/license_double5.sol' |
       grep -v -E 'license/license_hidden_unicode.sol' |
